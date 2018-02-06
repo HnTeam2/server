@@ -5,7 +5,7 @@ public class Server
     public static void Main()
     {
         //送信してくるIPアドレス//とりあえず
-        string ipString = "172.20.10.10";
+        string ipString = "127.0.0.1"; //ローカルは”127.0.0.1”
         System.Net.IPAddress ipAdd = System.Net.IPAddress.Parse(ipString);
 
 
@@ -33,8 +33,8 @@ public class Server
         System.Net.Sockets.NetworkStream ns = client.GetStream();
 
         //タイムアウト//とりあえず10秒
-        ns.ReadTimeout = 10000;
-        ns.WriteTimeout = 10000;
+       // ns.ReadTimeout = 10000;
+        //ns.WriteTimeout = 10000;
 
         //クライアントから送られたデータを受信する
         System.Text.Encoding enc = System.Text.Encoding.UTF8;
