@@ -6,7 +6,7 @@
 //----------//コネクション処理と送受信処理//----------//
 class Conection
 {
-    public const string IpString = "127.0.0.1";
+    public const string IpString = "127.0.0.1"; //PCのIPアドレスにする
     private string resMsg;
 
     private System.Net.IPAddress ipAdd;
@@ -84,7 +84,7 @@ class Conection
     {
         enc = System.Text.Encoding.UTF8;
         //クライアントに送る文字列を作成してデータを送信する
-        string sendMsg = "Hello, World";
+        string sendMsg = resMsg;
         //文字列をバイト型配列に変換
         byte[] sendBytes = enc.GetBytes(sendMsg + '\n');
         //データを送信する
@@ -117,17 +117,17 @@ class Conection
 //----------//メイン//---------//
 public class TcpIp
 {
-    public const string IpOrHost = "127.0.0.1";  //送信元のIPアンドレス
+    public const string IpOrHost = "127.0.0.1";  //PCのIPアンドレス
     public const int Port = 9999;                //受け取るポート番号
 
     public static void Main()
     {
-        Conection client = new Conection(IpOrHost ,Port);
+        Conection server = new Conection(Port);
         while (true)
         {
-            client.sendData();
-            System.Threading.Thread.Sleep(2000);
+            server.recvData();
+            System.Threading.Thread.Sleep(500);
         }
-        client.clientClose();
+        server.serverClose();
     }
 }
