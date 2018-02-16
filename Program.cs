@@ -1,13 +1,12 @@
-//PCをクライアントまたはサーバにして、データの送受信をするプログラム
-//written 2018/02/15
+//----------// PCをクライアントまたはサーバにして、データの送受信をするプログラム //----------//
+//-----// written 2018/02/17 //-----//
 
 ﻿using System;
 
-//----------//コネクション処理と送受信処理//----------//
+//----------// コネクション処理と送受信処理 //----------//
 class Conection
 {
-    public const string IpString = "127.0.0.1"; //PCのIPアドレスにする
-    private string resMsg;
+    public const string ServerIp = "127.0.0.1"; //サーバとして使う場合のサーバ側のIPアドレス
 
     private System.Net.IPAddress ipAdd;
     private System.Net.Sockets.TcpListener listener;
@@ -17,10 +16,10 @@ class Conection
     private System.Text.Encoding enc;
     private System.Net.Sockets.TcpClient tcp;
 
-    //-----//サーバ側の処理//-----//
+    //-----// サーバ側のコンストラクタ //-----//
     public Conection(int port)
     {
-        ipAdd = System.Net.IPAddress.Parse(IpString);
+        ipAdd = System.Net.IPAddress.Parse(ServerIp);
         listener = new System.Net.Sockets.TcpListener(ipAdd, port);
         //受信開始
         listener.Start();
@@ -36,27 +35,26 @@ class Conection
         ns = client.GetStream();
     }
 
-    //-----//クライアント側の処理//-----//
-    public Conection(string ipOrHost, int port)
+    //-----// クライアント側のコンストラクタ //-----//
+    public Conection(string clientIp, int port)
     {
         //サーバーと接続する
-        tcp = new System.Net.Sockets.TcpClient(ipOrHost, port);
+        tcp = new System.Net.Sockets.TcpClient(clientIp, port);
         Console.WriteLine("サーバー({0}:{1})と接続しました({2}:{3})。", ((System.Net.IPEndPoint)tcp.Client.RemoteEndPoint).Address, ((System.Net.IPEndPoint)tcp.Client.RemoteEndPoint).Port, ((System.Net.IPEndPoint)tcp.Client.LocalEndPoint).Address, ((System.Net.IPEndPoint)tcp.Client.LocalEndPoint).Port);
         //NetworkStreamを取得する
         ns = tcp.GetStream();
     }
 
-    //-----//送信相手からデータを受け取る//-----//
-    public void recvData()
+    //-----// 送信相手からデータを受信する //-----//
+    public string recvData()
     {
         //タイムアウト//とりあえず10秒
         // ns.ReadTimeout = 10000;
         //ns.WriteTimeout = 10000;
-
-        //クライアントから送られたデータを受信する
+        //送られてきたデータを受信する
         enc = System.Text.Encoding.UTF8;
         ms = new System.IO.MemoryStream();
-        byte[] resBytes = new byte[256];
+        byte[] resBytes = new byte[256];   //バイト型で受け取るのでその受け皿
         int resSize = 0;
         do
         {
@@ -72,19 +70,21 @@ class Conection
             //まだ読み取れるデータがあるか、データの最後が\nでない時は受信を続ける
         } while (ns.DataAvailable || resBytes[resSize - 1] != '\n');
         //受信したデータを文字列に変換
-        resMsg = enc.GetString(ms.GetBuffer(), 0, (int)ms.Length);
+        string resMsg = enc.GetString(ms.GetBuffer(), 0, (int)ms.Length);
         ms.Close();
         //末尾の\nを削除
         resMsg = resMsg.TrimEnd('\n');
         Console.WriteLine(resMsg);
+        //受け取ったデータをstring型で呼び出し元に返す
+        return resMsg;
     }
 
-    //-----//接続相手にデータを送信する//-----//
-    public void sendData()
+    //-----// 接続相手にデータを送信する //-----//
+    public void sendData(string recvMsg)
     {
         enc = System.Text.Encoding.UTF8;
         //クライアントに送る文字列を作成してデータを送信する
-        string sendMsg = resMsg;
+        string sendMsg = recvMsg;
         //文字列をバイト型配列に変換
         byte[] sendBytes = enc.GetBytes(sendMsg + '\n');
         //データを送信する
@@ -92,7 +92,7 @@ class Conection
         Console.WriteLine(sendMsg);
     }
 
-    //-----//サーバ側のソケットを閉じる//-----//
+    //-----// サーバ側のソケットを閉じる //-----//
     public void serverClose()
     {
         ns.Close();
@@ -103,10 +103,9 @@ class Conection
         Console.ReadLine();
     }
 
-    //-----//クライアント側のソケットを閉じる//-----//
+    //-----// クライアント側のソケットを閉じる //-----//
     public void clientClose()
     {
-        //閉じる
         ns.Close();
         tcp.Close();
         Console.WriteLine("切断しました。");
@@ -114,19 +113,25 @@ class Conection
     }
 }
 
-//----------//メイン//---------//
+//----------// メインクラス //---------//
+//-----// サーバとして運用する場合の注意点 //-----//
+//初期状態ではサーバ：クライアント（１：１）での通信するようになっているので
+//サーバ：クライアント（多：１）での通信するようにしたい場合は
+//ポート番号を追加し、それぞれのインスタンスを作ることで可能
 public class TcpIp
 {
-    public const string IpOrHost = "127.0.0.1";  //PCのIPアンドレス
-    public const int Port = 9999;                //受け取るポート番号
+    public const string IpOrHost = "127.0.0.1";  //クライアントとして使う場合のサーバ側のIPアンドレス
+    public const int Port = 9999;                //接続するポート番号
+    private string resMsg;                       //recvDataからの戻り値
 
     public static void Main()
     {
         Conection server = new Conection(Port);
+        //永続的に送受信するようになっているので、用途にあわせて、while文の条件式を変更すること
         while (true)
         {
-            server.recvData();
-            System.Threading.Thread.Sleep(500);
+            resMsg = server.recvData();
+            server.sendData(resMsg);
         }
         server.serverClose();
     }
