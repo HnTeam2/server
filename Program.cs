@@ -36,10 +36,10 @@ class Conection
     }
 
     //-----// クライアント側のコンストラクタ //-----//
-    public Conection(string clientIp, int port)
+    public Conection(string serverIp, int port)
     {
         //サーバーと接続する
-        tcp = new System.Net.Sockets.TcpClient(clientIp, port);
+        tcp = new System.Net.Sockets.TcpClient(serverIp, port);
         Console.WriteLine("サーバー({0}:{1})と接続しました({2}:{3})。", ((System.Net.IPEndPoint)tcp.Client.RemoteEndPoint).Address, ((System.Net.IPEndPoint)tcp.Client.RemoteEndPoint).Port, ((System.Net.IPEndPoint)tcp.Client.LocalEndPoint).Address, ((System.Net.IPEndPoint)tcp.Client.LocalEndPoint).Port);
         //NetworkStreamを取得する
         ns = tcp.GetStream();
@@ -49,7 +49,7 @@ class Conection
     public string recvData()
     {
         //タイムアウト//とりあえず10秒
-        // ns.ReadTimeout = 10000;
+        //ns.ReadTimeout = 10000;
         //ns.WriteTimeout = 10000;
         //送られてきたデータを受信する
         enc = System.Text.Encoding.UTF8;
@@ -120,14 +120,14 @@ class Conection
 //ポート番号を追加し、それぞれのインスタンスを作ることで可能
 public class TcpIp
 {
-    public const string IpOrHost = "127.0.0.1";  //クライアントとして使う場合のサーバ側のIPアンドレス
+    public const string ServerIp = "127.0.0.1";  //クライアントとして使う場合のサーバ側のIPアンドレス
     public const int Port = 9999;                //接続するポート番号
     private string resMsg;                       //recvDataからの戻り値
 
     public static void Main()
     {
         Conection server = new Conection(Port);
-        //永続的に送受信するようになっているので、用途にあわせて、while文の条件式を変更すること
+        //永続的に送受信するようになっているので、用途にあわせてwhile文の条件式を変更すること
         while (true)
         {
             resMsg = server.recvData();
