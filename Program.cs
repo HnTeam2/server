@@ -46,6 +46,7 @@ class Conection
     }
 
     //-----// 送信相手からデータを受信する //-----//
+    //引数にstring型のデータを渡すことでそのデータを送信する
     public string recvData()
     {
         //タイムアウト//とりあえず10秒
@@ -80,6 +81,7 @@ class Conection
     }
 
     //-----// 接続相手にデータを送信する //-----//
+    //引数として受け取ったstring型のデータを送信する
     public void sendData(string recvMsg)
     {
         enc = System.Text.Encoding.UTF8;
@@ -121,8 +123,7 @@ class Conection
 public class TcpIp
 {
     public const string ServerIp = "127.0.0.1";  //クライアントとして使う場合のサーバ側のIPアンドレス
-    public const int Port = 9999;                //接続するポート番号
-    private string resMsg;                       //recvDataからの戻り値
+    public const int Port = 9999;                //接続するポート番号。複数のクライアントと接続する場合は追加する
 
     public static void Main()
     {
@@ -130,8 +131,10 @@ public class TcpIp
         //永続的に送受信するようになっているので、用途にあわせてwhile文の条件式を変更すること
         while (true)
         {
-            resMsg = server.recvData();
-            server.sendData(resMsg);
+            // string resMsg = server.recvData();
+            // System.Threading.Thread.Sleep(1000);
+            // server.sendData(resMsg);
+            // System.Threading.Thread.Sleep(1000);
         }
         server.serverClose();
     }
